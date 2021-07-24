@@ -1,4 +1,4 @@
-# matrix4-whitebalance
+# mueb4-whitebalance
 UI for setting white balance on muebs.
 
 ```
