@@ -8,6 +8,15 @@ IPbase = "10.6."
 UDP_PORT = 2000
 btColor = "gray"
 
+# Set COLOR_STEPS to 7 (3 bit) or 15 (4 bit)
+# YOU should also set DEFAULT_COLOR_LEVELS
+COLOR_STEPS = 15
+
+# 3 bit
+# DEFAULT_COLOR_LEVELS = [1,2,4,8,16,32,63]
+# 4 bit
+DEFAULT_COLOR_LEVELS = [1,3,5,7,9,11,13,16,19,22,26,32,38,47,63]
+
 sock = socket.socket(socket.AF_INET, # Internet
             socket.SOCK_DGRAM) # UDP
 
@@ -24,15 +33,13 @@ def sendWbalance(level, col, arr_r, arr_g, arr_b):
     print("IP=" + UDP_IP + ", PORT=" + str(UDP_PORT) + ":")
     print(MESSAGE)
     sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
-    
-
 
 szintszam=13
 ablakszam=8
-arr_r = [0 for x in range(7)]
-arr_g = [0 for x in range(7)]
-arr_b = [0 for x in range(7)]
 
+arr_r = [0 for x in range(COLOR_STEPS)]
+arr_g = [0 for x in range(COLOR_STEPS)]
+arr_b = [0 for x in range(COLOR_STEPS)]
 
 root = tk.Tk()
 global_select = tk.IntVar()
@@ -40,8 +47,8 @@ global_select.set(2)
 global_select_last = global_select.get()
 
 win_select = [[0 for x in range(ablakszam)] for y in range(szintszam)]
-wb_sliders = [[0 for x in range(8)] for y in range(3)]  #[color(RGB)][threshold]
-wb_saves = [[0 for x in range(8)] for y in range(3)]  #[color(RGB)][threshold]
+wb_sliders = [[0 for x in range(COLOR_STEPS+1)] for y in range(3)]  #[color(RGB)][threshold]
+wb_saves = [[0 for x in range(COLOR_STEPS+1)] for y in range(3)]  #[color(RGB)][threshold]
 wb_global_sliders = [0 for x in range(3)] #RGB
 
 def update_wb_from_sliders():
@@ -77,7 +84,7 @@ def send_single(event):
                 sendWbalance(18-y,x+5, arr[0], arr[1], arr[2])
 
 def send_all(event):
-    arr = [[0 for x in range(7)] for y in range(3)]
+    arr = [[0 for x in range(COLOR_STEPS)] for y in range(3)]
     for c in range(3):
         for k in range(7):
             arr[c][k] = wb_sliders[c][k].get()
@@ -128,7 +135,7 @@ def main():
 
     root.btn=  [[0 for x in range(ablakszam)] for y in range(szintszam)] 
     for x in range(ablakszam):
-         for y in range(szintszam):
+        for y in range(szintszam):
             y2 = 18 - y
             root.btn[y][x] = tk.Button(frameRooms,command= lambda x1=x, y1=y: color_change(x1,y1))
             root.btn[y][x].grid(column=x, row=y+2)
@@ -137,10 +144,10 @@ def main():
             root.btn[y][x].config(text=ss, width=8, height=1, activebackground=root.btn[y][x].cget('background'))
 
     for c in range(3):
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             wb_sliders[c][k] = tk.Scale(frameSliders, from_=63, to=0, length=150)
             wb_sliders[c][k].grid(column=k, row=c, pady = 20)
-            wb_sliders[c][k].set(1 << k)
+            wb_sliders[c][k].set(DEFAULT_COLOR_LEVELS[k])
             wb_sliders[c][k].config(bg=get_color(c))
         wb_global_sliders[c] = tk.Scale(frameGlobalSliders, from_=1, to=0, resolution=0.01, length=150, command= lambda x, c=c: global_slider_update(x, c))
         wb_global_sliders[c].grid(column=0, row=c, pady = 20)
@@ -153,7 +160,7 @@ def main():
 
 def update_colors():
     for x in range(ablakszam):
-         for y in range(szintszam):
+        for y in range(szintszam):
             if win_select[y][x]:
                 root.btn[y][x].config(bg="#fff176", activebackground="#fff176")
             else:
@@ -169,12 +176,14 @@ def global_slider_update(val, c):
     wb_sliders[c][0].config(state="normal")
     wb_sliders[c][0].set(1)
     wb_sliders[c][0].config(state="disabled")
-    for k in range(1, 7):
-        tmp = round((1 << k) * wb_global_sliders[c].get(), 0)
+    for k in range(1, COLOR_STEPS):
+        tmp = round(DEFAULT_COLOR_LEVELS[k] * wb_global_sliders[c].get(), 0)
         tmp = int(tmp)
         wb_sliders[c][k].config(state="normal")
-        if tmp > wb_sliders[c][k-1].get(): wb_sliders[c][k].set(tmp)
-        else: wb_sliders[c][k].set( wb_sliders[c][k-1].get()+1)
+        if tmp > wb_sliders[c][k-1].get():
+            wb_sliders[c][k].set(tmp)
+        else:
+            wb_sliders[c][k].set( wb_sliders[c][k-1].get()+1)
         wb_sliders[c][k].config(state="disabled")
                 
 def update_sliders_en():
@@ -183,14 +192,14 @@ def update_sliders_en():
         for c in range(3):
             wb_global_sliders[c].config(state="disabled")
             wb_global_sliders[c].config(bg=btColor)
-            for k in range(7):
+            for k in range(COLOR_STEPS):
                 wb_sliders[c][k].config(state="normal")
                 wb_sliders[c][k].config(bg=get_color(c))
     else:
         for c in range(3):
             wb_global_sliders[c].config(state="normal")
             wb_global_sliders[c].config(bg=get_color(c))
-            for k in range(7):
+            for k in range(COLOR_STEPS):
                 wb_sliders[c][k].config(state="disabled")
                 wb_sliders[c][k].config(bg=btColor)
     if global_select_last != global_select.get():
@@ -204,12 +213,12 @@ def update_sliders_en():
     
 def load_sliders():
     for c in range(3):
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             wb_sliders[c][k].set(wb_saves[c][k])
 
 def save_sliders():
     for c in range(3):
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             wb_saves[c][k] = wb_sliders[c][k].get()
 
 def save_conf_dialog():
@@ -267,7 +276,7 @@ def load_configs(filepath):
     for c in range(3):
         line = f.readline()
         data = line.split(",")
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             wb_saves[c][k] = int(data[k])
     f.readline()
     for c in range(3):
@@ -300,4 +309,3 @@ main()
 
 
 
-        
