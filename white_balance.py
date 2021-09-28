@@ -5,7 +5,7 @@ from tkinter.filedialog import asksaveasfilename
 from time import sleep
 
 IPbase = "10.6."
-UDP_PORT = 2000
+UDP_PORT = 50000
 btColor = "gray"
 
 # Set COLOR_STEPS to 7 (3 bit) or 15 (4 bit)
@@ -23,10 +23,9 @@ sock = socket.socket(socket.AF_INET, # Internet
 def sendWbalance(level, col, arr_r, arr_g, arr_b):
     global UDP_PORT
     UDP_IP = IPbase + str(level) + "." + str(col)
-    #UDP_IP = "192.168.137.255"
     MESSAGE = bytearray()
     MESSAGE.extend("SEM".encode())
-    MESSAGE.extend(bytes([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+    MESSAGE.extend(bytes([0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
     MESSAGE.extend(arr_r)
     MESSAGE.extend(arr_g)
     MESSAGE.extend(arr_b)
@@ -74,9 +73,9 @@ def deselect_all(event):
     update_colors()
     
 def send_single(event):
-    arr = [[0 for x in range(7)] for y in range(3)]
+    arr = [[0 for x in range(COLOR_STEPS)] for y in range(3)]
     for c in range(3):
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             arr[c][k] = wb_sliders[c][k].get()
     for x in range(ablakszam):
         for y in range(szintszam):
@@ -86,7 +85,7 @@ def send_single(event):
 def send_all(event):
     arr = [[0 for x in range(COLOR_STEPS)] for y in range(3)]
     for c in range(3):
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             arr[c][k] = wb_sliders[c][k].get()
     sendWbalance(255, 255, arr[0], arr[1], arr[2])
     
