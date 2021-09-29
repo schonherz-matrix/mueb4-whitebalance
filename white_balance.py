@@ -26,7 +26,7 @@ def sendWbalance(level, col, arr_r, arr_g, arr_b):
     MESSAGE = bytearray()
     MESSAGE.extend("SEM".encode())
 
-    if side.get() != -1:
+    if side.get() == -1:
         MESSAGE.append(0x01)
     else:
         MESSAGE.append(0x02)
