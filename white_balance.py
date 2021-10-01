@@ -286,7 +286,7 @@ def save_configs(filepath):
     if global_select.get() == 1: save_sliders()
     for c in range(3):
         st = ""
-        for k in range(7):
+        for k in range(COLOR_STEPS):
             st = st + str(wb_saves[c][k]) + ","
         st = st[:-1] + "\n"
         f.write(st)
