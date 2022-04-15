@@ -24,7 +24,7 @@ def sendWbalance(level, col, arr_r, arr_g, arr_b):
     global UDP_PORT
     UDP_IP = IPbase + str(level) + "." + str(col)
     MESSAGE = bytearray()
-    MESSAGE.extend("SEM".encode())
+    MESSAGE.extend("SEM\0".encode())
 
     if side.get() == -1:
         MESSAGE.append(0x01)
@@ -35,6 +35,8 @@ def sendWbalance(level, col, arr_r, arr_g, arr_b):
 
     if side.get() != -1:
         MESSAGE.append(side.get())
+    else:
+        MESSAGE.append(0x00)
 
     MESSAGE.extend(arr_r)
     MESSAGE.extend(arr_g)
